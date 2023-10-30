@@ -9,6 +9,7 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 struct ShaderProgramSource
 {
@@ -149,12 +150,15 @@ int main(void)
         GLCall(glGenVertexArrays(1, &vertexArrayObject));
         GLCall(glBindVertexArray(vertexArrayObject));
 
-        VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+        VertexArray vertexArray;
+    	VertexBuffer vertexBuffer(positions, 4 * 2 * sizeof(float));
 
-        GLCall(glEnableVertexAttribArray(0));
-        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+    	VertexBufferLayout layout;
+        layout.push<float>(2);
+    	vertexArray.addBuffer(vertexBuffer, layout);
 
-        IndexBuffer ib(indices, 6);
+
+        IndexBuffer indexBuffer(indices, 6);
 
         ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
         std::cout << "VERTEX" << std::endl;
@@ -189,7 +193,8 @@ int main(void)
             GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
 
             GLCall(glBindVertexArray(vertexArrayObject));
-            ib.Bind();
+            vertexArray.bind();
+            indexBuffer.bind();
 
 
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
