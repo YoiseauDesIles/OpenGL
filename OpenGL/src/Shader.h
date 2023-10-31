@@ -17,7 +17,7 @@ private:
 	unsigned int m_RendererID;
 	std::unordered_map<std::string, int> m_UniformLocationCache;
 	
-	unsigned int getUniformLocation(const std::string& name);
+	int getUniformLocation(const std::string& name);
 
 	ShaderProgramSource parseShader(const std::string& filepath);
 	unsigned int compileShader(unsigned int type, const std::string & source);
@@ -32,5 +32,7 @@ public:
 
 	//set uniforms
 	void setUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+	void setUniform1f(const std::string& name, float value);
+	void setUniform1i(const std::string& name, int value);
 };
 

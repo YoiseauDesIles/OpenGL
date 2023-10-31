@@ -13,7 +13,7 @@
 #include "VertexBufferLayout.h"
 
 #include "Shader.h"
-
+#include "Texture.h"
 
 int main(void)
 {
@@ -51,10 +51,10 @@ int main(void)
     
     {
         float positions[] = {
-            -0.5f, -0.5f,   //1st vertex
-             0.5f, -0.5f,   //2nd vertex
-             0.5f,  0.5f,   //3rd vertex
-            -0.5f,  0.5f    //4th vertex
+            -0.5f, -0.5f, 0.0f, 0.0f, //1st vertex
+             0.5f, -0.5f, 1.0f, 0.0f, //2nd vertex
+             0.5f,  0.5f, 1.0f, 1.0f, //3rd vertex
+            -0.5f,  0.5f, 0.0f, 1.0f  //4th vertex
 
         };
 
@@ -63,14 +63,14 @@ int main(void)
             2, 3, 0
         };
 
-        unsigned int vertexArrayObject;
-        GLCall(glGenVertexArrays(1, &vertexArrayObject));
-        GLCall(glBindVertexArray(vertexArrayObject));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+        GLCall(glEnable(GL_BLEND));
 
         VertexArray vertexArray;
-    	VertexBuffer vertexBuffer(positions, 4 * 2 * sizeof(float));
+    	VertexBuffer vertexBuffer(positions, 4 * 4 * sizeof(float));
 
     	VertexBufferLayout layout;
+        layout.push<float>(2);
         layout.push<float>(2);
     	vertexArray.addBuffer(vertexBuffer, layout);
 
@@ -79,8 +79,12 @@ int main(void)
 
         Shader shader("res/shaders/Basic.shader");
         shader.bind();
-
         shader.setUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
+
+        Texture texture("res/textures/chien_bouge.png");
+        texture.bind(0);
+        //The 0 is the slot where the texture is passed
+        shader.setUniform1i("u_Texture", 0);
 
         vertexArray.unbind();
         vertexBuffer.unbind();
