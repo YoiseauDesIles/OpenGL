@@ -57,10 +57,10 @@ int main(void)
     
     {
         float positions[] = {
-             100.0f,  100.0f, 0.0f, 0.0f, //1st vertex
-             200.0f,  100.0f, 1.0f, 0.0f, //2nd vertex
-             200.0f,  200.0f, 1.0f, 1.0f, //3rd vertex
-             100.0f,  200.0f, 0.0f, 1.0f  //4th vertex
+             -50.0f, -50.0f, 0.0f, 0.0f, //1st vertex
+             50.0f,  -50.0f, 1.0f, 0.0f, //2nd vertex
+             50.0f,   50.0f, 1.0f, 1.0f, //3rd vertex
+             -50.0f,  50.0f, 0.0f, 1.0f  //4th vertex
 
         };
 
@@ -84,8 +84,7 @@ int main(void)
         IndexBuffer indexBuffer(indices, 6);
 
         glm::mat4 projectionMatrix  = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-        glm::mat4 viewMatrix        = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));; //Unit Matrix that represents the camera, then translated 100 px to the right
-
+        glm::mat4 viewMatrix        = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));; //Unit Matrix that represents the camera
 
         Shader shader("res/shaders/Basic.shader");
         shader.bind();
@@ -108,7 +107,8 @@ int main(void)
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
 
-        glm::vec3 translation(200, 200, 0);
+        glm::vec3 translation1(200, 200, 0);
+        glm::vec3 translation2(400, 200, 0);
 
         float r = 0.0f;
         float increment = 0.05f;
@@ -121,14 +121,28 @@ int main(void)
 
             ImGui_ImplGlfwGL3_NewFrame();
 
-            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation);
-            glm::mat4 MVPMatrix = projectionMatrix * viewMatrix * modelMatrix;
+            
 
-            shader.bind();
-            shader.setUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
-            shader.setUniformMat4f("u_MVP", MVPMatrix);
+            {
+                glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation1);
+                glm::mat4 MVPMatrix = projectionMatrix * viewMatrix * modelMatrix;
+                shader.bind();
+                shader.setUniformMat4f("u_MVP", MVPMatrix);
 
-            renderer.draw(vertexArray, indexBuffer, shader);
+                renderer.draw(vertexArray, indexBuffer, shader);
+            }
+
+            {
+                glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation2);
+                glm::mat4 MVPMatrix = projectionMatrix * viewMatrix * modelMatrix;
+                shader.bind();
+                shader.setUniformMat4f("u_MVP", MVPMatrix);
+
+                renderer.draw(vertexArray, indexBuffer, shader);
+            }
+          
+
+
 
             
 
@@ -141,7 +155,8 @@ int main(void)
 
             {
 
-                ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);        
+                ImGui::SliderFloat3("Translation A", &translation1.x, 0.0f, 960.0f);        
+                ImGui::SliderFloat3("Translation B", &translation2.x, 0.0f, 960.0f);        
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             }
 
