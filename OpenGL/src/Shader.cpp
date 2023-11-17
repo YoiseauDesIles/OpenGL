@@ -37,20 +37,34 @@ void Shader::unbind() const
     GLCall(glUseProgram(0));
 }
 
+void Shader::setUniform1i(const std::string& name, int value)
+{
+    GLCall(glUniform1i(getUniformLocation(name), value))
+}
 
 void Shader::setUniform1f(const std::string& name, float value)
 {
     GLCall(glUniform1f(getUniformLocation(name), value));
 }
 
-void Shader::setUniform1i(const std::string& name, int value)
+void Shader::setUniform2f(const std::string& name, float v0, float v1)
 {
-    GLCall(glUniform1i(getUniformLocation(name), value))
+    GLCall(glUniform2f(getUniformLocation(name), v0, v1));
+}
+
+void Shader::setUniform3f(const std::string& name, float v0, float v1, float v2)
+{
+    GLCall(glUniform3f(getUniformLocation(name), v0, v1, v2));
 }
 
 void Shader::setUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
     GLCall(glUniform4f(getUniformLocation(name), v0, v1, v2, v3));
+}
+
+void Shader::setUniformMat3f(const std::string& name, const glm::mat3& matrix)
+{
+    GLCall(glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
 }
 
 void Shader::setUniformMat4f(const std::string& name, const glm::mat4& matrix)
@@ -141,8 +155,9 @@ unsigned int Shader::createShader(const std::string& vertexShader, const std::st
     return program;
 }
 
-int Shader::getUniformLocation(const std::string& name)
+int Shader::getUniformLocation(const std::string& name) const
 {
+    //If the uniform is already in the cache, return the uniform from the cache
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
         return m_UniformLocationCache[name];
 
@@ -150,6 +165,7 @@ int Shader::getUniformLocation(const std::string& name)
     if (location == 1)
         std::cout << "Warning: uniform '" << name << "' doesn't exist" << std::endl;
     
+    //Add the uniform in the cache
     m_UniformLocationCache[name] = location;
 
     return location;
