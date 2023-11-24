@@ -22,6 +22,7 @@
 
 #include "tests/TestClearColor.h"
 #include "tests/TestTexture2D.h"
+#include "tests/TestDynamicTexture2D.h"
 
 
 int main(void)
@@ -75,6 +76,7 @@ int main(void)
 
         testMenu->registerTest<test::TestClearColor>("Clear Color");
         testMenu->registerTest<test::TestTexture2D>("2DTexture");
+        testMenu->registerTest<test::TestDynamicTexture2D>("Dynamic2DTexture");
 
         while (!glfwWindowShouldClose(window))
         {
@@ -87,7 +89,7 @@ int main(void)
                 currentTest->onUpdate(0.0f);
                 currentTest->onRender();
                 ImGui::Begin("Test");
-                if (currentTest != testMenu && ImGui::Button("<-"))
+                if (currentTest != testMenu && ImGui::Button("<-("))
                 {
                     delete currentTest;
                     currentTest = testMenu;

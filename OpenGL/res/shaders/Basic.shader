@@ -30,7 +30,7 @@ in vec4 v_Color;
 in float v_texIndex;
 
 uniform vec4 u_Color;
-uniform sampler2D u_Texture[2];
+uniform sampler2D u_Texture[3];
         
 void main()
 {
