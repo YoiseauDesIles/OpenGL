@@ -35,7 +35,7 @@ namespace test {
 
 		glm::mat4 m_ProjectionMatrix, m_ViewMatrix;
 
-		float m_QuadPosition[2] = { -150.0f, 150.0f };
+		float m_QuadPosition[2] = { 0.0f, 0.0f };
 
 	};
 

@@ -50,25 +50,45 @@ namespace test {
 
         };
 
-        unsigned int indices[] = {
-            0, 1, 2, 2, 3, 0,
-            4, 5, 6, 6, 7, 4
-        };
 
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
         GLCall(glEnable(GL_BLEND));
 
+        const size_t maxQuadCount = 1000;
+        const size_t maxVertexCount = maxQuadCount * 4;
+        const size_t maxIndexCount = maxQuadCount * 6;
+
         m_VertexArray = std::make_unique<VertexArray>();
         //m_VertexBuffer = std::make_unique<VertexBuffer>(positions, 9 * 9 * sizeof(float));
-        m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, 1000 * sizeof(Vertex), true);
+        m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, maxVertexCount * sizeof(Vertex), true);
         VertexBufferLayout layout;
         layout.push<float>(2);
         layout.push<float>(2);
         layout.push<float>(4);
         layout.push<float>(1);
 
+        /*unsigned int indices[] = {
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4
+        };*/
+
+        uint32_t indices[maxIndexCount];
+        uint32_t offset = 0;
+        for (size_t i = 0; i < maxIndexCount; i += 6)
+        {
+            indices[i + 0] = 0 + offset;
+            indices[i + 1] = 1 + offset;
+            indices[i + 2] = 2 + offset;
+            
+            indices[i + 3] = 2 + offset;
+            indices[i + 4] = 3 + offset;
+            indices[i + 5] = 0 + offset;
+
+            offset += 4;
+        }
+
         m_VertexArray->addBuffer(*m_VertexBuffer, layout);
-        m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 12);
+        m_IndexBuffer = std::make_unique<IndexBuffer>(indices, sizeof(indices));
 
         m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
         m_Shader->bind();
@@ -94,35 +114,37 @@ namespace test {
     }
 
 
-    std::array<Vertex, 4> createQuad(float x, float y, float textureID)
+    Vertex* createQuad(Vertex* target, float x, float y, float textureID)
     {
-        float size = 300.0f;
+        float size = 100.0f;
+        x *= 100.0f;
+        y *= 100.0f;
 
-        Vertex v0;
-        v0.Position = { x ,y };
-        v0.TexCoords = { 0.0f, 0.0f };
-        v0.Color = { 0.8, 0.1, 0.5, 1.0 };
-        v0.TexId = textureID;
+        target->Position = { x ,y };
+        target->TexCoords = { 0.0f, 0.0f };
+        target->Color = { 0.8, 0.1, 0.5, 1.0 };
+        target->TexId = textureID;
+        target++;
 
-        Vertex v1;
-        v1.Position = { x + size, y };
-        v1.TexCoords = { 1.0f, 0.0f };
-        v1.Color = { 0.8, 0.1, 0.5, 1.0 };
-        v1.TexId = textureID;
+        target->Position = { x + size, y };
+        target->TexCoords = { 1.0f, 0.0f };
+        target->Color = { 0.8, 0.1, 0.5, 1.0 };
+        target->TexId = textureID;
+        target++;
 
-        Vertex v2;
-        v2.Position = { x + size,  y + size };
-        v2.TexCoords = { 1.0f, 1.0f };
-        v2.Color = { 0.8, 0.1, 0.5, 1.0 };
-        v2.TexId = textureID;
+        target->Position = { x + size,  y + size };
+        target->TexCoords = { 1.0f, 1.0f };
+        target->Color = { 0.8, 0.1, 0.5, 1.0 };
+        target->TexId = textureID;
+        target++;
 
-        Vertex v3;
-        v3.Position = { x,  y + size };
-        v3.TexCoords = { 0.0f, 1.0f };
-        v3.Color = { 0.8, 0.1, 0.5, 1.0 };
-        v3.TexId = textureID;
+        target->Position = { x,  y + size };
+        target->TexCoords = { 0.0f, 1.0f };
+        target->Color = { 0.8, 0.1, 0.5, 1.0 };
+        target->TexId = textureID;
+        target++;
 
-        return { v0, v1, v2, v3 };
+        return target;
     }
 
     void TestDynamicTexture2D::onRender()
@@ -142,17 +164,26 @@ namespace test {
 
         };*/
 
+        uint32_t indexCount = 0;
 
+        std::array<Vertex, 1000> vertices;
+        Vertex* buffer = vertices.data();
 
-        auto q0 = createQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
-        auto q1 = createQuad(450.0f, -150.0f, 2.0f);
+        for (int y = 0; y < 5; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                buffer = createQuad(buffer, x, y, (x + y) % 2);
+                indexCount += 6;
+            }
+        }
 
-        Vertex vertices[8];
-        memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex));
-        memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
+        buffer = createQuad(buffer, m_QuadPosition[0], m_QuadPosition[1], 2.0f);
+        indexCount += 6;
+        m_IndexBuffer->setCount(indexCount);
 
         m_VertexBuffer->bind();
-        GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
+        GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data()));
 
         GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
         GLCall(glClear(GL_COLOR_BUFFER_BIT));
@@ -169,10 +200,6 @@ namespace test {
             glm::mat4 MVPMatrix = m_ProjectionMatrix * m_ViewMatrix * modelMatrix;
             m_Shader->bind();
             m_Shader->setUniformMat4f("u_MVP", MVPMatrix);
-
-
-
-
 
             renderer.draw(*m_VertexArray, *m_IndexBuffer, *m_Shader);
         }
